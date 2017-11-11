@@ -9,9 +9,12 @@ import java.util.Collection;
 
 @Service
 public class MealServiceImpl implements MealService {
+    private MealRepository repository;
 
     @Autowired
-    private MealRepository repository;
+    public MealServiceImpl(MealRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public Meal save(Meal meal) {
