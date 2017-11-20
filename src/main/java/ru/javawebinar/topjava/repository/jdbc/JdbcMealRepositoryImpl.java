@@ -65,14 +65,15 @@ public class JdbcMealRepositoryImpl implements MealRepository {
     @Override
     public Meal get(int id, int userId) {
         List<Meal> meals = jdbcTemplate.query("SELECT * FROM meals WHERE id=?", ROW_MAPPER, id);
-        if(jdbcTemplate.query("SELECT usesrId FROM meals WHERE id=?", id) == userId)
-        Meal meal = DataAccessUtils.singleResult(meals);
-        return
+        if(jdbcTemplate.queryForObject("SELECT user_id FROM meals WHERE id=?", Integer.class, id) == userId) {
+            return DataAccessUtils.singleResult(meals);
+        }
+        return null;
     }
 
     @Override
     public List<Meal> getAll(int userId) {
-        return null;
+        return jdbcTemplate.query("SELECT * FROM meals ORDER BY datetime DESC", ROW_MAPPER);
     }
 
     @Override
