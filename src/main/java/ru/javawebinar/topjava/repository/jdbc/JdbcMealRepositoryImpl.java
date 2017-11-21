@@ -44,7 +44,7 @@ public class JdbcMealRepositoryImpl implements MealRepository {
                 .addValue("dateTime", meal.getDateTime())
                 .addValue("description", meal.getDescription())
                 .addValue("calories", meal.getCalories())
-                .addValue("userId", userId);
+                .addValue("user_id", userId);
 
         if (meal.isNew()) {
             Number newKey = insertMeal.executeAndReturnKey(map);
@@ -52,14 +52,14 @@ public class JdbcMealRepositoryImpl implements MealRepository {
         } else {
             namedParameterJdbcTemplate.update(
                     "UPDATE meals SET dateTime=:dateTime, description=:description, calories=:calories, " +
-                            "userId=:userId WHERE id=:id", map);
+                            "user_id=:userId WHERE id=:id", map);
         }
         return meal;
     }
 
     @Override
     public boolean delete(int id, int userId) {
-        return jdbcTemplate.update("DELETE FROM meals WHERE id=?", id) != 0;
+        return jdbcTemplate.update("DELETE FROM meals WHERE id=? AND user_id=?", id, userId) != 0;
     }
 
     @Override
@@ -73,11 +73,23 @@ public class JdbcMealRepositoryImpl implements MealRepository {
 
     @Override
     public List<Meal> getAll(int userId) {
-        return jdbcTemplate.query("SELECT * FROM meals ORDER BY datetime DESC", ROW_MAPPER);
+        return jdbcTemplate.query("SELECT * " +
+                "FROM meals " +
+                "WHERE user_id=?" +
+                "ORDER BY datetime DESC", ROW_MAPPER, userId);
     }
 
     @Override
     public List<Meal> getBetween(LocalDateTime startDate, LocalDateTime endDate, int userId) {
-        return null;
+        return jdbcTemplate.query("SELECT * " +
+                        "FROM meals " +
+                        "WHERE user_id=? " +
+                        "AND datetime>? " +
+                        "AND datetime<?" +
+                        "ORDER BY datetime DESC",
+                ROW_MAPPER,
+                userId,
+                startDate,
+                endDate);
     }
 }
