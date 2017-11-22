@@ -17,4 +17,14 @@ public class MealTestData {
             LocalDateTime.of(2015, Month.JUNE, 1, 21, 0),
             "Админ ужин",
             1500);
+
+    public static final Meal MEAL_THRE = new Meal(null,
+            LocalDateTime.of(2015, Month.JUNE, 1, 21, 0),
+            "Админ ужин",
+            1500);
+
+    public static final Meal MEAL_UPDATE = new Meal(START_SEQ + 9,
+            LocalDateTime.of(2015, Month.JUNE, 1, 21, 0),
+            "Админ ужин",
+            500);
 }
