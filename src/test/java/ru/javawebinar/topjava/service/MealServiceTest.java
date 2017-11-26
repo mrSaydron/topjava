@@ -1,7 +1,14 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.Statement;
+import org.slf4j.Logger;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -13,7 +20,9 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.*;
 
+import static org.slf4j.LoggerFactory.getLogger;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
@@ -25,9 +34,44 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @RunWith(SpringJUnit4ClassRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
+    private static final Logger log = getLogger(MealServiceTest.class);
+    private static Map<String, Long> totalWorkTime = new HashMap<>();
 
     static {
         SLF4JBridgeHandler.install();
+    }
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
+    @Rule
+    public TestRule timeRule = new TestRule() {
+        @Override
+        public Statement apply(Statement base, Description description) {
+            return new Statement() {
+                @Override
+                public void evaluate() throws Throwable {
+                    Date startTest = new Date();
+                    base.evaluate();
+                    Date endTest = new Date();
+                    long workTime = endTest.getTime() - startTest.getTime();
+                    totalWorkTime.put(description.getMethodName(), workTime);
+                    log.info("Work time " + description.getMethodName() + ": " + workTime + "ms");
+                }
+            };
+        }
+    };
+
+    @AfterClass
+    public static void after() {
+        log.info("Work time methods:");
+        long totalTime = 0;
+        for (String description :
+                totalWorkTime.keySet()) {
+            log.info("Work time " + description + ": " + totalWorkTime.get(description) + "ms");
+            totalTime += totalWorkTime.get(description);
+        }
+        log.info("Work time methods: " + totalTime + "ms");
     }
 
     @Autowired
@@ -36,11 +80,15 @@ public class MealServiceTest {
     @Test
     public void testDelete() throws Exception {
         service.delete(MEAL1_ID, USER_ID);
-        assertMatch(service.getAll(USER_ID), MEAL6, MEAL5, MEAL4, MEAL3, MEAL2);
+        List<Meal> meals = service.getAll(USER_ID);
+        assertMatch(meals, MEAL6, MEAL5, MEAL4, MEAL3, MEAL2);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
+    //@Test(expected = NotFoundException.class)
     public void testDeleteNotFound() throws Exception {
+        thrown.expect(NotFoundException.class);
+        thrown.expectMessage(MEAL1_ID + "");
         service.delete(MEAL1_ID, 1);
     }
 
@@ -57,8 +105,11 @@ public class MealServiceTest {
         assertMatch(actual, ADMIN_MEAL1);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
+    //@Test(expected = NotFoundException.class)
     public void testGetNotFound() throws Exception {
+        thrown.expect(NotFoundException.class);
+        thrown.expectMessage(MEAL1_ID + "");
         service.get(MEAL1_ID, ADMIN_ID);
     }
 
@@ -69,8 +120,11 @@ public class MealServiceTest {
         assertMatch(service.get(MEAL1_ID, USER_ID), updated);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
+    //@Test(expected = NotFoundException.class)
     public void testUpdateNotFound() throws Exception {
+        thrown.expect(NotFoundException.class);
+        thrown.expectMessage(MEAL1.getId().toString());
         service.update(MEAL1, ADMIN_ID);
     }
 
