@@ -1,6 +1,7 @@
 package ru.javawebinar.topjava.repository.datajpa;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
@@ -12,38 +13,44 @@ import java.util.List;
 
 @Repository
 public class DataJpaMealRepositoryImpl implements MealRepository {
-
+    //private static final Sort SORT_DATETIME = new Sort(Sort.Direction.DESC, "date_time");
 
     @Autowired
-    private CrudMealRepository crudRepository;
+    private CrudMealRepository mealRepository;
+
+    @Autowired
+    private CrudUserRepository userRepository;
 
     @Override
-
     public Meal save(Meal meal, int userId) {
         if (!meal.isNew() && get(meal.getId(), userId) == null) {
             return null;
         }
-        return crudRepository.save(meal);
+        meal.setUser(userRepository.getOne(userId));
+        return mealRepository.save(meal);
     }
 
     @Override
     public boolean delete(int id, int userId) {
-        return crudRepository.delete(id, userId) != 0;
+        User user = userRepository.getOne(userId);
+        return mealRepository.deleteByIdAndUser(id, user) != 0;
     }
 
     @Override
     public Meal get(int id, int userId) {
-        Meal meal = crudRepository.findById(id).get();
-        return meal != null && meal.getUser().getId() == userId ? meal : null;
+        User user = userRepository.getOne(userId);
+        return mealRepository.findByIdAndUser(id, user);
     }
 
     @Override
     public List<Meal> getAll(int userId) {
-        return crudRepository.getALLMeals(userId);
+        User user = userRepository.getOne(userId);
+        return mealRepository.findAllByUserOrderByDateTimeDesc(user);
     }
 
     @Override
     public List<Meal> getBetween(LocalDateTime startDate, LocalDateTime endDate, int userId) {
-        return crudRepository.getBetween(userId, startDate, endDate);
+        User user = userRepository.getOne(userId);
+        return mealRepository.findAllByUserAndDateTimeBetweenOrderByDateTimeDesc(user, startDate, endDate);
     }
 }

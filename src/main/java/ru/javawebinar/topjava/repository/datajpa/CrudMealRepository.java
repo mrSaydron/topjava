@@ -17,20 +17,13 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public interface CrudMealRepository extends JpaRepository<Meal, Integer> {
 
-    @Query(name = Meal.ALL_SORTED)
-    List<Meal> getALLMeals(@Param("userId") int userId);
-
-    @Query(name = Meal.DELETE)
     @Transactional
     @Modifying
-    int delete(@Param("id") int id, @Param("userId") int userId);
+    int deleteByIdAndUser(int id, User user);
 
-    @Query("SELECT m FROM Meal m WHERE m.user.id=:userId AND m.dateTime BETWEEN :startDate AND :endDate ORDER BY m.dateTime DESC")
-    List<Meal> getBetween(@Param("userId") int userId,
-                          @Param("startDate") LocalDateTime startDate,
-                          @Param("endDate") LocalDateTime endDate);
+    List<Meal> findAllByUserOrderByDateTimeDesc(User user);
 
-    @Override
-    @Transactional
-    Meal save(Meal meal);
+    Meal findByIdAndUser(int id, User user);
+
+    List<Meal> findAllByUserAndDateTimeBetweenOrderByDateTimeDesc(User user, LocalDateTime startDate, LocalDateTime endDate);
 }
