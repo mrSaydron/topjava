@@ -26,4 +26,9 @@ public class RootControllerTest extends AbstractControllerTest {
                         )
                 )));
     }
+
+    /*@Test
+    public void testMeals() throws Exception {
+        mockMvc.perform(get(/meals))
+    }*/
 }
