@@ -35,10 +35,10 @@ public class MealRestController extends AbstractMealController {
 
     @GetMapping(value = "/between", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MealWithExceed> getBetween(
-            @RequestParam("startDate") String requestStartDate,
-            @RequestParam("startTime") String requestStartTime,
-            @RequestParam("endDate") String requestEndDate,
-            @RequestParam("endTime") String requestEndTime) {
+            @RequestParam(value = "startDate", required = false, defaultValue = "") String requestStartDate,
+            @RequestParam(value = "startTime", required = false, defaultValue = "") String requestStartTime,
+            @RequestParam(value = "endDate", required = false, defaultValue = "") String requestEndDate,
+            @RequestParam(value = "endTime", required = false, defaultValue = "") String requestEndTime) {
         LocalDate startDate = parseLocalDate(requestStartDate);
         LocalTime startTime = parseLocalTime(requestStartTime);
         LocalDate endDate = parseLocalDate(requestEndDate);
