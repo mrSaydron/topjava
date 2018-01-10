@@ -37,4 +37,9 @@ public class MealAjaxController extends AbstractMealController{
             super.create(meal);
         }
     }
+
+    /*@PostMapping
+    public void test() {
+        int i = 0;
+    }*/
 }
